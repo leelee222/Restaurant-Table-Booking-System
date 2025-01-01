@@ -7,16 +7,37 @@ app.use(express.json());
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://restaurant-table-booking-system-jet.vercel.app/'
-];
+  'https://restaurant-table-booking-system-jet.vercel.app',
+  'https://restaurant-table-booking-system-production.up.railway.app'
+].map(origin => origin.trim());
 
+// CORS configuration
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, tools)
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
   credentials: true,
+  maxAge: 86400,
   optionsSuccessStatus: 200
 }));
+
+// Preflight requests
+app.options('*', cors());
+
+// Test route
+app.get('/test-cors', (req, res) => {
+  res.json({ message: 'CORS test successful' });
+});
 
 const MAX_ADVANCE_DAYS = 30;
 const SAME_DAY_CUTOFF_HOURS = 2;
