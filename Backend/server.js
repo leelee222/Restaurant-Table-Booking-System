@@ -41,6 +41,9 @@ app.use((req, res, next) => {
   next();
 });
 
+const MAX_ADVANCE_DAYS = 30;
+const SAME_DAY_CUTOFF_HOURS = 2;
+
 const BUSINESS_HOURS = {
   start: "12:00 PM",
   end: "8:00 PM"
@@ -55,8 +58,6 @@ const RESPONSE_MESSAGES = {
   SERVER_ERROR: "We apologize for the inconvenience. Please try again later."
 };
 
-const MAX_ADVANCE_DAYS = 30;
-const SAME_DAY_CUTOFF_HOURS = 2;
 
 const formatTime = (time) => {
   if (time.includes(':')) {
