@@ -65,15 +65,11 @@ const RESPONSE_MESSAGES = {
 
 
 const formatTime = (time) => {
-  if (time.includes(':')) {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    if (hour < 0 || hour > 23) return null;
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  }
-  return time;
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
 };
 
 const isValidTimeSlot = (time) => {
@@ -150,10 +146,9 @@ const validateBooking = (req, res, next) => {
 
 app.post("/create-booking", validateBooking, async (req, res) => {
   const { name, contact, guests, date, time } = req.body;
-  const formattedTime = formatTime(time);
   
   try {
-    const existingBookings = await Booking.find({ date, time: formattedTime });
+    const existingBookings = await Booking.find({ date, time: time });
     if (existingBookings.length >= MAX_CAPACITY_PER_SLOT) {
       return res.status(400).json({ 
         status: "error",
@@ -166,7 +161,7 @@ app.post("/create-booking", validateBooking, async (req, res) => {
       contact, 
       guests, 
       date, 
-      time: formattedTime 
+      time 
     });
     await booking.save();
     
@@ -175,7 +170,7 @@ app.post("/create-booking", validateBooking, async (req, res) => {
       message: RESPONSE_MESSAGES.BOOKING_SUCCESS,
       data: {
         bookingId: booking._id,
-        slot: formattedTime,
+        slot: time,
         remainingCapacity: MAX_CAPACITY_PER_SLOT - (existingBookings.length + 1)
       }
     });
