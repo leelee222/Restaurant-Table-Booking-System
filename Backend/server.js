@@ -70,15 +70,14 @@ const formatTime = (time) => {
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
-    return `${hour12}:00 ${ampm}`;
+    return `${hour12}:${minutes} ${ampm}`;
   }
   return time;
 };
 
 const isValidTimeSlot = (time) => {
   const formattedTime = formatTime(time);
-  const validSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-  return validSlots.includes(formattedTime);
+  return VALID_SLOTS.includes(formattedTime);
 };
 
 
@@ -135,6 +134,7 @@ const validateBooking = (req, res, next) => {
     });
   }
   
+  req.body.time = formattedTime;
   next();
 };
 
