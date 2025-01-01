@@ -7,8 +7,7 @@ app.use(express.json());
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://restaurant-table-booking-system-jet.vercel.app/',
-  'https://restaurant-table-booking-system-production.up.railway.app'
+  'https://restaurant-table-booking-system-jet.vercel.app/'
 ];
 
 app.use(cors({
@@ -26,6 +25,13 @@ const BUSINESS_HOURS = {
   start: "12:00 PM",
   end: "8:00 PM"
 };
+
+const MAX_CAPACITY_PER_SLOT = 4;
+
+const VALID_SLOTS = [
+  "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", 
+  "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"
+];
 
 const RESPONSE_MESSAGES = {
   DATE_INVALID: `Reservation date must be between today and ${MAX_ADVANCE_DAYS} days in advance.`,
@@ -113,19 +119,40 @@ const validateBooking = (req, res, next) => {
 
 app.post("/create-booking", validateBooking, async (req, res) => {
   const { name, contact, guests, date, time } = req.body;
+  const formattedTime = formatTime(time);
   
   try {
-    const existingBooking = await Booking.findOne({ date, time });
-    if (existingBooking) {
-      return res.status(400).json({ message: "Time slot already booked." });
+    const existingBookings = await Booking.find({ date, time: formattedTime });
+    if (existingBookings.length >= MAX_CAPACITY_PER_SLOT) {
+      return res.status(400).json({ 
+        status: "error",
+        message: RESPONSE_MESSAGES.SLOT_OCCUPIED 
+      });
     }
 
-    const booking = new Booking({ name, contact, guests, date, time });
+    const booking = new Booking({ 
+      name, 
+      contact, 
+      guests, 
+      date, 
+      time: formattedTime 
+    });
     await booking.save();
     
-    res.status(201).json({ message: "Booking created successfully", id: booking._id });
+    res.status(201).json({ 
+      status: "success",
+      message: RESPONSE_MESSAGES.BOOKING_SUCCESS,
+      data: {
+        bookingId: booking._id,
+        slot: formattedTime,
+        remainingCapacity: MAX_CAPACITY_PER_SLOT - (existingBookings.length + 1)
+      }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ 
+      status: "error",
+      message: RESPONSE_MESSAGES.SERVER_ERROR 
+    });
   }
 });
 
@@ -157,17 +184,19 @@ app.get("/get-available-slots", async (req, res) => {
       return acc;
     }, {});
 
-    const slotsInfo = allSlots.map(time => ({
+    const slotsInfo = VALID_SLOTS.map(time => ({
       time,
-      remainingCapacity: maxCapacity - (bookingCounts[time] || 0)
+      remainingCapacity: MAX_CAPACITY_PER_SLOT - (bookingCounts[time] || 0)
     }));
 
     const availableSlots = slotsInfo.filter(slot => slot.remainingCapacity > 0);
 
     res.status(200).json({
       date,
-      availableSlots: availableSlots.map(slot => slot.time),
-      slotsInfo: availableSlots
+      slotsInfo: slotsInfo,
+      availableSlots: slotsInfo
+        .filter(slot => slot.remainingCapacity > 0)
+        .map(slot => slot.time)
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
