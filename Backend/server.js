@@ -1,5 +1,5 @@
 const express = require("express");
-const db = require("./db");
+const { Booking } = require("./db");
 const cors = require("cors");
 
 const app = express();
@@ -11,38 +11,33 @@ app.use(cors({
   credentials: true,
 }));
 
-app.post("/create-booking", (req, res) => {
+app.post("/create-booking", async (req, res) => {
   const { name, contact, guests, date, time } = req.body;
-  db.get("SELECT * FROM bookings WHERE date = ? AND time = ?", [date, time], (err, row) => {
-    if (row) {
+  
+  try {
+    const existingBooking = await Booking.findOne({ date, time });
+    if (existingBooking) {
       return res.status(400).json({ message: "Time slot already booked." });
     }
 
-    db.run(
-      `INSERT INTO bookings (name, contact, guests, date, time) VALUES (?, ?, ?, ?, ?)`,
-      [name, contact, guests, date, time],
-      function (err) {
-        if (err) {
-          return res.status(500).json({ message: err.message });
-        }
-        res.status(201).json({ message: "Booking created successfully", id: this.lastID });
-      }
-    );
-  });
+    const booking = new Booking({ name, contact, guests, date, time });
+    await booking.save();
+    
+    res.status(201).json({ message: "Booking created successfully", id: booking._id });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-app.get("/get-bookings", (req, res) => {
+app.get("/get-bookings", async (req, res) => {
   const { date } = req.query;
-
-  const query = date ? "SELECT * FROM bookings WHERE date = ?" : "SELECT * FROM bookings";
-  const params = date ? [date] : [];
-
-  db.all(query, params, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ message: err.message });
-    }
-    res.status(200).json(rows);
-  });
+  try {
+    const query = date ? { date } : {};
+    const bookings = await Booking.find(query);
+    res.status(200).json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 const isValidTimeSlot = (time) => {
@@ -57,42 +52,38 @@ const isValidDate = (date) => {
   return selectedDate >= today;
 };
 
-app.get("/get-available-slots", (req, res) => {
+app.get("/get-available-slots", async (req, res) => {
   const { date } = req.query;
   
   if (!date || !isValidDate(date)) {
     return res.status(400).json({ message: "Invalid or past date" });
   }
-  
-  const allSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-  const maxCapacity = 4;
-  db.all(
-    "SELECT time, COUNT(*) as count FROM bookings WHERE date = ? GROUP BY time",
-    [date],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ message: err.message });
-      }
 
-      const bookingCounts = rows.reduce((acc, row) => {
-        acc[row.time] = row.count;
-        return acc;
-      }, {});
+  try {
+    const bookings = await Booking.find({ date });
+    const allSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+    const maxCapacity = 4;
 
-      const availableSlots = allSlots.filter(slot => 
-        !bookingCounts[slot] || bookingCounts[slot] < maxCapacity
-      );
+    const bookingCounts = bookings.reduce((acc, booking) => {
+      acc[booking.time] = (acc[booking.time] || 0) + 1;
+      return acc;
+    }, {});
 
-      res.status(200).json({
-        date,
-        availableSlots,
-        slotsInfo: availableSlots.map(slot => ({
-          time: slot,
-          remainingCapacity: maxCapacity - (bookingCounts[slot] || 0)
-        }))
-      });
-    }
-  );
+    const slotsInfo = allSlots.map(time => ({
+      time,
+      remainingCapacity: maxCapacity - (bookingCounts[time] || 0)
+    }));
+
+    const availableSlots = slotsInfo.filter(slot => slot.remainingCapacity > 0);
+
+    res.status(200).json({
+      date,
+      availableSlots: availableSlots.map(slot => slot.time),
+      slotsInfo: availableSlots
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 app.get('/', (req, res) => {
