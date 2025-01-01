@@ -16,13 +16,35 @@ const BUSINESS_HOURS = {
   end: "8:00 PM"
 };
 
+const RESPONSE_MESSAGES = {
+  DATE_INVALID: `Reservation date must be between today and ${MAX_ADVANCE_DAYS} days in advance.`,
+  TIME_INVALID: `Reservation time must be between ${BUSINESS_HOURS.start} and ${BUSINESS_HOURS.end}.`,
+  ADVANCE_BOOKING: `Reservations must be made at least ${SAME_DAY_CUTOFF_HOURS} hours in advance.`,
+  SLOT_OCCUPIED: "We apologize, but this time slot is no longer available.",
+  BOOKING_SUCCESS: "Your reservation has been confirmed successfully.",
+  SERVER_ERROR: "We apologize for the inconvenience. Please try again later."
+};
+
 const MAX_ADVANCE_DAYS = 30;
 const SAME_DAY_CUTOFF_HOURS = 2;
 
-const isValidTimeSlot = (time) => {
-  const validSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-  return validSlots.includes(time);
+const formatTime = (time) => {
+  if (time.includes(':')) {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:00 ${ampm}`;
+  }
+  return time;
 };
+
+const isValidTimeSlot = (time) => {
+  const formattedTime = formatTime(time);
+  const validSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+  return validSlots.includes(formattedTime);
+};
+
 
 const isValidDate = (date) => {
   const selectedDate = new Date(date);
@@ -50,22 +72,30 @@ const isValidBookingTime = (date, time) => {
 
 const validateBooking = (req, res, next) => {
   const { date, time } = req.body;
+  const formattedTime = formatTime(time);
+
   
   if (!isValidDate(date)) {
     return res.status(400).json({ 
-      message: `Invalid date. Bookings must be made between today and ${MAX_ADVANCE_DAYS} days in advance.` 
+      status: "error",
+      message: RESPONSE_MESSAGES.DATE_INVALID,
+      code: "INVALID_DATE"
     });
   }
 
-  if (!isValidTimeSlot(time)) {
+  if (!isValidTimeSlot(formattedTime)) {
     return res.status(400).json({ 
-      message: `Invalid time slot. Available hours are between ${BUSINESS_HOURS.start} and ${BUSINESS_HOURS.end}.` 
+      status: "error",
+      message: RESPONSE_MESSAGES.TIME_INVALID,
+      code: "INVALID_TIME"
     });
   }
   
-  if (!isValidBookingTime(date, time)) {
+  if (!isValidBookingTime(date, formattedTime)) {
     return res.status(400).json({ 
-      message: `Bookings must be made at least ${SAME_DAY_CUTOFF_HOURS} hours in advance.` 
+      status: "error",
+      message: RESPONSE_MESSAGES.ADVANCE_BOOKING,
+      code: "INVALID_ADVANCE_TIME"
     });
   }
   
