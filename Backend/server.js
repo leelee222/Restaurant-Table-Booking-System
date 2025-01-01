@@ -11,7 +11,66 @@ app.use(cors({
   credentials: true,
 }));
 
-app.post("/create-booking", async (req, res) => {
+const BUSINESS_HOURS = {
+  start: "12:00 PM",
+  end: "8:00 PM"
+};
+
+
+const isValidTimeSlot = (time) => {
+  const validSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+  return validSlots.includes(time);
+};
+
+const isValidDate = (date) => {
+  const selectedDate = new Date(date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) return false;
+  
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + MAX_ADVANCE_DAYS);
+  if (selectedDate > maxDate) return false;
+  
+  return true;
+};
+
+const isValidBookingTime = (date, time) => {
+  const now = new Date();
+  const bookingTime = new Date(date + ' ' + time);
+  if (bookingTime.getDate() === now.getDate()) {
+    const hoursBeforeBooking = (bookingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (hoursBeforeBooking < SAME_DAY_CUTOFF_HOURS) return false;
+  }
+  
+  return true;
+};
+
+const validateBooking = (req, res, next) => {
+  const { date, time } = req.body;
+  
+  if (!isValidDate(date)) {
+    return res.status(400).json({ 
+      message: `Invalid date. Bookings must be made between today and ${MAX_ADVANCE_DAYS} days in advance.` 
+    });
+  }
+
+  if (!isValidTimeSlot(time)) {
+    return res.status(400).json({ 
+      message: `Invalid time slot. Available hours are between ${BUSINESS_HOURS.start} and ${BUSINESS_HOURS.end}.` 
+    });
+  }
+  
+  if (!isValidBookingTime(date, time)) {
+    return res.status(400).json({ 
+      message: `Bookings must be made at least ${SAME_DAY_CUTOFF_HOURS} hours in advance.` 
+    });
+  }
+  
+  next();
+};
+
+app.post("/create-booking", validateBooking, async (req, res) => {
   const { name, contact, guests, date, time } = req.body;
   
   try {
@@ -39,18 +98,6 @@ app.get("/get-bookings", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-const isValidTimeSlot = (time) => {
-  const validSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-  return validSlots.includes(time);
-};
-
-const isValidDate = (date) => {
-  const selectedDate = new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return selectedDate >= today;
-};
 
 app.get("/get-available-slots", async (req, res) => {
   const { date } = req.query;
