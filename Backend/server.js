@@ -74,7 +74,7 @@ const formatTime = (time) => {
 
 const isValidTimeSlot = (time) => {
   const formattedTime = formatTime(time);
-  if (!formattedTime) return false;
+  console.log(`Checking time: ${formattedTime} against VALID_SLOTS:`, VALID_SLOTS);
   return VALID_SLOTS.includes(formattedTime);
 };
 
@@ -93,14 +93,23 @@ const isValidDate = (date) => {
 };
 
 const isValidBookingTime = (date, time) => {
-  const now = new Date();
-  const bookingTime = new Date(date + ' ' + time);
-  if (bookingTime.getDate() === now.getDate()) {
-    const hoursBeforeBooking = (bookingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    if (hoursBeforeBooking < SAME_DAY_CUTOFF_HOURS) return false;
-  }
+  const formattedTime = formatTime(time);
   
-  return true;
+  // Check if time is in VALID_SLOTS
+  if (!VALID_SLOTS.includes(formattedTime)) {
+    console.log(`Invalid slot: ${formattedTime} not in VALID_SLOTS`);
+    return false;
+  }
+
+  // Check if time is within business hours
+  const [startHours, startMinutes] = BUSINESS_HOURS.start.split(/[: ]/);
+  const [endHours, endMinutes] = BUSINESS_HOURS.end.split(/[: ]/);
+
+  const startTime = new Date(`1970-01-01T${parseInt(startHours) % 12}:${startMinutes} ${startHours >= 12 ? 'PM' : 'AM'}`);
+  const endTime = new Date(`1970-01-01T${parseInt(endHours) % 12}:${endMinutes} ${endHours >= 12 ? 'PM' : 'AM'}`);
+  const bookingTime = new Date(`1970-01-01T${time}`);
+
+  return bookingTime >= startTime && bookingTime <= endTime;
 };
 
 const validateBooking = (req, res, next) => {
