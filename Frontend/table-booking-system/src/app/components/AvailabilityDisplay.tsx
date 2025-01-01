@@ -38,9 +38,9 @@ const AvailabilityDisplay: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/get-available-slots?date=${date}`);
+      const response = await fetch(`https://restaurant-table-booking-system-production.up.railway.app/get-available-slots?date=${date}`);
       const data: AvailabilityResponse = await response.json();
-      console.log('Received data:', data); // Debug log
+            console.log('Received data:', data); // Debug log
 
 
       if (response.ok) {
