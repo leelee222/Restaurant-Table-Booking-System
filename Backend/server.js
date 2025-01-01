@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3000","https://restaurant-table-booking-system-production.up.railway.app",
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
@@ -50,8 +50,6 @@ const isValidTimeSlot = (time) => {
   return validSlots.includes(time);
 };
 
-// Add time slot validation
-// Add date validation
 const isValidDate = (date) => {
   const selectedDate = new Date(date);
   const today = new Date();
@@ -62,15 +60,12 @@ const isValidDate = (date) => {
 app.get("/get-available-slots", (req, res) => {
   const { date } = req.query;
   
-  // Validate date
   if (!date || !isValidDate(date)) {
     return res.status(400).json({ message: "Invalid or past date" });
   }
-
+  
   const allSlots = ["12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-  const maxCapacity = 4; // Maximum bookings per slot
-
-  // Get bookings with count
+  const maxCapacity = 4;
   db.all(
     "SELECT time, COUNT(*) as count FROM bookings WHERE date = ? GROUP BY time",
     [date],
@@ -79,13 +74,11 @@ app.get("/get-available-slots", (req, res) => {
         return res.status(500).json({ message: err.message });
       }
 
-      // Create map of booked slots with their counts
       const bookingCounts = rows.reduce((acc, row) => {
         acc[row.time] = row.count;
         return acc;
       }, {});
 
-      // Filter available slots based on capacity
       const availableSlots = allSlots.filter(slot => 
         !bookingCounts[slot] || bookingCounts[slot] < maxCapacity
       );
