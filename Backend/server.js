@@ -38,6 +38,10 @@ app.get("/get-bookings", (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the Restaurant Table Booking System');
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
