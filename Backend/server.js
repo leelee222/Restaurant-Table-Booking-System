@@ -112,6 +112,14 @@ const validateBooking = (req, res, next) => {
   const formattedTime = formatTime(time);
 
   
+  if (!formattedTime) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid time format",
+      code: "INVALID_TIME_FORMAT"
+    });
+  }
+
   if (!isValidDate(date)) {
     return res.status(400).json({ 
       status: "error",
