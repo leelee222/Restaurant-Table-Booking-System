@@ -68,6 +68,7 @@ const formatTime = (time) => {
   if (time.includes(':')) {
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
+    if (hour < 0 || hour > 23) return null;
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
@@ -77,6 +78,7 @@ const formatTime = (time) => {
 
 const isValidTimeSlot = (time) => {
   const formattedTime = formatTime(time);
+  if (!formattedTime) return false;
   return VALID_SLOTS.includes(formattedTime);
 };
 
