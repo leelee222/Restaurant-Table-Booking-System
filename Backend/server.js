@@ -4,6 +4,13 @@ const db = require("./db");
 const app = express();
 app.use(express.json());
 
+app.use(cors({
+  origin: "http://localhost:3000", // Allow requests from your frontend's origin
+  methods: ["GET", "POST", "DELETE"], // Specify allowed HTTP methods
+  credentials: true, // Enable credentials (optional)
+}));
+
+
 app.post("/create-booking", (req, res) => {
     const { name, contact, guests, date, time } = req.body;
   db.get("SELECT * FROM bookings WHERE date = ? AND time = ?", [date, time], (err, row) => {
