@@ -1,25 +1,87 @@
 "use client";
 
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography, List, ListItem, ListItemText } from "@mui/material";
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Typography, 
+  List, 
+  ListItem, 
+  ListItemText,
+  CircularProgress,
+  Alert,
+  Chip
+} from "@mui/material";
+
+interface TimeSlot {
+  time: string;
+  remainingCapacity: number;
+}
+
+interface AvailabilityResponse {
+  date: string;
+  availableSlots: string[];
+  slotsInfo: TimeSlot[];
+}
 
 const AvailabilityDisplay: React.FC = () => {
-  const [date, setDate] = useState("");
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [date, setDate] = useState<string>("");
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFetch = async () => {
+    if (!date) return;
+    
+    setLoading(true);
+    setError(null);
+
     try {
-      const response = await fetch(`https://restaurant-table-booking-system-production.up.railway.app/get-available-slots?date=${date}`);
-      const data = await response.json();
+      const response = await fetch(`http://localhost:5000/get-available-slots?date=${date}`);
+      const data: AvailabilityResponse = await response.json();
+      console.log('Received data:', data); // Debug log
+
 
       if (response.ok) {
-        setAvailableSlots(data);
+        setSlots(data.slotsInfo);
       } else {
-        setAvailableSlots([]);
+        setError('Failed to fetch slots');
+        setSlots([]);
       }
     } catch (error) {
-      console.error("Error fetching available slots:", error);
+      setError('Server connection error');
+      setSlots([]);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const renderSlots = () => {
+    if (!Array.isArray(slots)) return null;
+    
+    return slots.map((slot) => (
+      <ListItem 
+        key={slot.time}
+        sx={{ 
+          border: 1, 
+          borderColor: 'divider',
+          borderRadius: 1,
+          mb: 1 
+        }}
+      >
+        <ListItemText 
+          primary={slot.time}
+          secondary={
+            <Chip 
+              label={`${slot.remainingCapacity} tables available`}
+              color={slot.remainingCapacity > 2 ? "success" : "warning"}
+              size="small"
+            />
+          }
+        />
+      </ListItem>
+    ));
   };
 
   return (
@@ -27,6 +89,7 @@ const AvailabilityDisplay: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Check Availability
       </Typography>
+
       <TextField
         fullWidth
         label="Date"
@@ -35,24 +98,41 @@ const AvailabilityDisplay: React.FC = () => {
         onChange={(e) => setDate(e.target.value)}
         margin="normal"
         InputLabelProps={{ shrink: true }}
+        disabled={loading}
       />
-      <Button variant="contained" color="primary" onClick={handleFetch} sx={{ mt: 2 }}>
-        Check
+
+      <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={handleFetch} 
+        disabled={loading || !date}
+        sx={{ mt: 2 }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Check Availability'}
       </Button>
-      <Typography variant="h6" sx={{ mt: 2 }}>
-        Available Slots
-      </Typography>
-      <List sx={{ mt: 2 }}>
-        {availableSlots.length > 0 ? (
-          availableSlots.map((slot) => (
-            <ListItem key={slot}>
-              <ListItemText primary={`Time: ${slot}`} />
-            </ListItem>
-          ))
-        ) : (
-          <Typography sx={{ mt: 2 }}>No available slots found.</Typography>
-        )}
-      </List>
+
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {!loading && !error && (
+        <>
+          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+            Available Slots for {date}
+          </Typography>
+          <List>
+            {slots && slots.length > 0 ? (
+              renderSlots()
+            ) : (
+              <Typography color="text.secondary">
+                No available slots found for selected date.
+              </Typography>
+            )}
+          </List>
+        </>
+      )}
     </Box>
   );
 };

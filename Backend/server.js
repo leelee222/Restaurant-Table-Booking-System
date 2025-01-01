@@ -79,24 +79,22 @@ app.get("/get-available-slots", (req, res) => {
         return res.status(500).json({ message: err.message });
       }
 
-      // Create map of booked slots with their counts
       const bookingCounts = rows.reduce((acc, row) => {
         acc[row.time] = row.count;
         return acc;
       }, {});
 
-      // Filter available slots based on capacity
-      const availableSlots = allSlots.filter(slot => 
-        !bookingCounts[slot] || bookingCounts[slot] < maxCapacity
-      );
+      const slotsInfo = allSlots.map(time => ({
+        time,
+        remainingCapacity: maxCapacity - (bookingCounts[time] || 0)
+      }));
+
+      const availableSlots = slotsInfo.filter(slot => slot.remainingCapacity > 0);
 
       res.status(200).json({
         date,
-        availableSlots,
-        slotsInfo: availableSlots.map(slot => ({
-          time: slot,
-          remainingCapacity: maxCapacity - (bookingCounts[slot] || 0)
-        }))
+        availableSlots: availableSlots.map(slot => slot.time),
+        slotsInfo: availableSlots
       });
     }
   );
