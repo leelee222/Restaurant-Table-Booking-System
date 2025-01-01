@@ -10,7 +10,7 @@ const AvailabilityDisplay: React.FC = () => {
   const handleFetch = async () => {
     try {
       const response = await fetch(
-        `https://restaurant-table-booking-system-production.up.railway.app/get-bookings?date=${date}`
+        `http://restaurant-table-booking-system-production.up.railway.app/get-bookings?date=${date}`
       );
       const data = await response.json();
 

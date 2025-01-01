@@ -20,7 +20,7 @@ const BookingForm: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://restaurant-table-booking-system-production.up.railway.app/create-booking", {
+      const response = await fetch("http://restaurant-table-booking-system-production.up.railway.app/create-booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
