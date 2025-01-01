@@ -1,27 +1,41 @@
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
+const mongoose = require('mongoose');
 
-const dbPath = path.resolve(__dirname, "tableBooking.db");
+const MONGODB_URI = 'mongodb+srv://beendeckstore:W76aLa1xs5FreCAw@cluster0.jj6gf.mongodb.net/restaurant_booking';
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error("Error opening database:", err.message);
-  } else {
-    console.log("Connected to SQLite database.");
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection error:', err));
+
+const bookingSchema = new mongoose.Schema({
+  name: { 
+    type: String, 
+    required: true 
+  },
+  contact: { 
+    type: String, 
+    required: true 
+  },
+  guests: { 
+    type: Number, 
+    required: true 
+  },
+  date: { 
+    type: String, 
+    required: true 
+  },
+  time: { 
+    type: String, 
+    required: true 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
   }
 });
 
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS bookings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      contact TEXT NOT NULL,
-      guests INTEGER NOT NULL,
-      date TEXT NOT NULL,
-      time TEXT NOT NULL
-    )
-  `);
-});
+const Booking = mongoose.model('Booking', bookingSchema);
 
-module.exports = db;
+module.exports = { Booking };
