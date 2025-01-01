@@ -5,11 +5,27 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://restaurant-table-booking-system-jet.vercel.app',
+  'https://restaurant-table-booking-system-production.up.railway.app'
+];
+
 app.use(cors({
-  origin: ["http://localhost:3000", "https://restaurant-table-booking-system-jet.vercel.app"],
-  methods: ["GET", "POST", "DELETE"],
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
+  optionsSuccessStatus: 200
 }));
+
+app.options('*', cors());
 
 const BUSINESS_HOURS = {
   start: "12:00 PM",
