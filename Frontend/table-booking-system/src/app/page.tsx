@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
-import BookingForm from "./components/BookingForm";
-import AvailabilityDisplay from "./components/AvailabilityDisplay";
-import { Container, Grid } from "@mui/material";
+import { createTheme, ThemeProvider, CssBaseline, Container, Grid, Button } from "@mui/material";
+import Link from "next/link";
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<"light" | "dark">("light");
@@ -24,18 +22,25 @@ const App: React.FC = () => {
       mode,
     },
   });
-  
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container sx={{ mt: 4 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <BookingForm />
+          <Grid item xs={12}>
+            <Link href="/bookings" passHref>
+              <Button variant="contained" color="primary" fullWidth>
+                Book a Table
+              </Button>
+            </Link>
           </Grid>
-          {/* Uncomment when needed */}
-          <Grid item xs={12} md={6}>
-            <AvailabilityDisplay />
+          <Grid item xs={12}>
+            <Link href="/availability" passHref>
+              <Button variant="contained" color="secondary" fullWidth>
+                Check Availability
+              </Button>
+            </Link>
           </Grid>
         </Grid>
       </Container>

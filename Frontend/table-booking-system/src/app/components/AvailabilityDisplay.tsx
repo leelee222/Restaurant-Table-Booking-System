@@ -5,22 +5,20 @@ import { Box, TextField, Button, Typography, List, ListItem, ListItemText } from
 
 const AvailabilityDisplay: React.FC = () => {
   const [date, setDate] = useState("");
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
 
   const handleFetch = async () => {
     try {
-      const response = await fetch(
-        `http://restaurant-table-booking-system-production.up.railway.app/get-bookings?date=${date}`
-      );
+      const response = await fetch(`https://restaurant-table-booking-system-production.up.railway.app/get-available-slots?date=${date}`);
       const data = await response.json();
 
       if (response.ok) {
-        setBookings(data);
+        setAvailableSlots(data);
       } else {
-        setBookings([]);
+        setAvailableSlots([]);
       }
     } catch (error) {
-      console.error("Error fetching bookings:", error);
+      console.error("Error fetching available slots:", error);
     }
   };
 
@@ -41,18 +39,18 @@ const AvailabilityDisplay: React.FC = () => {
       <Button variant="contained" color="primary" onClick={handleFetch} sx={{ mt: 2 }}>
         Check
       </Button>
+      <Typography variant="h6" sx={{ mt: 2 }}>
+        Available Slots
+      </Typography>
       <List sx={{ mt: 2 }}>
-        {bookings.length > 0 ? (
-          bookings.map((booking) => (
-            <ListItem key={booking.id}>
-              <ListItemText
-                primary={`Time: ${booking.time}, Guests: ${booking.guests}`}
-                secondary={`Name: ${booking.name}`}
-              />
+        {availableSlots.length > 0 ? (
+          availableSlots.map((slot) => (
+            <ListItem key={slot}>
+              <ListItemText primary={`Time: ${slot}`} />
             </ListItem>
           ))
         ) : (
-          <Typography sx={{ mt: 2 }}>No bookings found.</Typography>
+          <Typography sx={{ mt: 2 }}>No available slots found.</Typography>
         )}
       </List>
     </Box>

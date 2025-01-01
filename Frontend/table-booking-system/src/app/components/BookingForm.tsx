@@ -10,6 +10,7 @@ const BookingForm: React.FC = () => {
     time: "",
   });
   const [message, setMessage] = useState("");
+  const [bookingDetails, setBookingDetails] = useState<any>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,7 +21,7 @@ const BookingForm: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://restaurant-table-booking-system-production.up.railway.app/create-booking", {
+      const response = await fetch("https://restaurant-table-booking-system-production.up.railway.app/create-booking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,6 +33,7 @@ const BookingForm: React.FC = () => {
 
       if (response.ok) {
         setMessage(data.message || "Booking created successfully!");
+        setBookingDetails(formData);
       } else {
         setMessage(data.message || "Failed to create booking.");
       }
@@ -104,6 +106,16 @@ const BookingForm: React.FC = () => {
         <Typography sx={{ mt: 2, color: message.includes("successfully") ? "green" : "red" }}>
           {message}
         </Typography>
+      )}
+      {bookingDetails && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Booking Summary</Typography>
+          <Typography>Name: {bookingDetails.name}</Typography>
+          <Typography>Contact: {bookingDetails.contact}</Typography>
+          <Typography>Guests: {bookingDetails.guests}</Typography>
+          <Typography>Date: {bookingDetails.date}</Typography>
+          <Typography>Time: {bookingDetails.time}</Typography>
+        </Box>
       )}
     </Box>
   );
