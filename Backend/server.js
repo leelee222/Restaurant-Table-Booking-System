@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "http://localhost:3000","https://restaurant-table-booking-system-production.up.railway.app",
+  origin: ["http://localhost:3000", "https://restaurant-table-booking-system-jet.vercel.app"],
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
