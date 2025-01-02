@@ -27,8 +27,8 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container sx={{ mt: 4 }}>
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
             <Link href="/bookings" passHref>
               <Button variant="contained" color="primary" fullWidth>
                 Book a Table
