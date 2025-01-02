@@ -85,8 +85,8 @@ const AvailabilityDisplay: React.FC = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4, fontFamily: "Lexend" }}>
+      <Typography variant="h4" gutterBottom sx={{fontFamily: "Lexend"}}>
         Check Availability
       </Typography>
 
@@ -99,6 +99,7 @@ const AvailabilityDisplay: React.FC = () => {
         margin="normal"
         InputLabelProps={{ shrink: true }}
         disabled={loading}
+        sx={{fontFamily: "Lexend"}}
       />
 
       <Button 
@@ -106,27 +107,27 @@ const AvailabilityDisplay: React.FC = () => {
         color="primary" 
         onClick={handleFetch} 
         disabled={loading || !date}
-        sx={{ mt: 2 }}
+        sx={{ mt: 2, fontFamily: "Lexend" }}
       >
         {loading ? <CircularProgress size={24} /> : 'Check Availability'}
       </Button>
 
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+        <Alert severity="error" sx={{ mt: 2, fontFamily: "Lexend" }}>
           {error}
         </Alert>
       )}
 
       {!loading && !error && (
         <>
-          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
+          <Typography variant="h6" sx={{ mt: 3, mb: 2, fontFamily: "Lexend" }}>
             Available Slots for {date}
           </Typography>
           <List>
             {slots && slots.length > 0 ? (
               renderSlots()
             ) : (
-              <Typography color="text.secondary">
+              <Typography color="text.secondary" sx={{fontFamily: "Lexend"}}>
                 No available slots found for selected date.
               </Typography>
             )}

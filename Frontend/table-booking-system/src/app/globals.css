@@ -40,3 +40,8 @@ a {
     color-scheme: dark;
   }
 }
+
+@font-face {
+  font-family: "Lexend";
+  src: url("/fonts/Lexend-Regular.ttf");
+}

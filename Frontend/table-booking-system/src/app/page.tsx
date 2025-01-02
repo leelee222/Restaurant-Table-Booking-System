@@ -21,23 +21,36 @@ const App: React.FC = () => {
     palette: {
       mode,
     },
+    typography: {
+      fontFamily: 'Lexend, Arial, sans-serif',
+    },
   });
 
   return (
     <ThemeProvider theme={theme}>
+      <style>
+          {`
+            @font-face {
+              font-family: 'Lexend';
+              src: url('/fonts/Lexend-Regular.ttf') format('truetype');
+              font-weight: 400;
+              font-style: normal;
+            }
+          `}
+        </style>
       <CssBaseline />
-      <Container sx={{ mt: 4 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+      <Container sx={{ mt: 4, fontFamily: 'Lexend' }}>
+        <Grid container spacing={2} justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
+          <Grid item xs={6} sm={6} md={4}>
             <Link href="/bookings" passHref>
-              <Button variant="contained" color="primary" fullWidth>
+              <Button variant="contained" color="primary" fullWidth sx={{ height: 100 }}>
                 Book a Table
               </Button>
             </Link>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={6} sm={6} md={4}>
             <Link href="/availability" passHref>
-              <Button variant="contained" color="secondary" fullWidth>
+              <Button variant="contained" color="secondary" fullWidth sx={{ height: 100 }}>
                 Check Availability
               </Button>
             </Link>

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 const BookingForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -42,9 +44,15 @@ const BookingForm: React.FC = () => {
     }
   };
 
+    const theme = createTheme({
+      typography: {
+        fontFamily: 'Lexend, Arial, sans-serif',
+      },
+    });
+
   return (
-    <Box sx={{ maxWidth: 400, mx: "auto", mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ maxWidth: 400, mx: "auto", mt: 4, fontFamily: "Lexend, Arial, sans-serif" }}>
+      <Typography variant="h4" gutterBottom sx={{fontFamily: "Lexend"}}>
         Book a Table
       </Typography>
       <form onSubmit={handleSubmit}>
@@ -56,6 +64,7 @@ const BookingForm: React.FC = () => {
           onChange={handleChange}
           margin="normal"
           required
+          sx={{fontFamily: "Lexend"}}
         />
         <TextField
           fullWidth
@@ -65,6 +74,7 @@ const BookingForm: React.FC = () => {
           onChange={handleChange}
           margin="normal"
           required
+          sx={{fontFamily: "Lexend"}}
         />
         <TextField
           fullWidth
@@ -75,6 +85,7 @@ const BookingForm: React.FC = () => {
           onChange={handleChange}
           margin="normal"
           required
+          sx={{fontFamily: "Lexend"}}
         />
         <TextField
           fullWidth
@@ -86,6 +97,7 @@ const BookingForm: React.FC = () => {
           margin="normal"
           InputLabelProps={{ shrink: true }}
           required
+          sx={{fontFamily: "Lexend"}}
         />
         <TextField
           fullWidth
@@ -97,24 +109,25 @@ const BookingForm: React.FC = () => {
           margin="normal"
           InputLabelProps={{ shrink: true }}
           required
+          sx={{fontFamily: "Lexend"}}
         />
-        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, fontFamily: "Lexend" }}>
           Submit
         </Button>
       </form>
       {message && (
-        <Typography sx={{ mt: 2, color: message.includes("successfully") ? "green" : "red" }}>
+        <Typography sx={{ mt: 2, color: message.includes("successfully") ? "green" : "red" , fontFamily: "Lexend"}}>
           {message}
         </Typography>
       )}
       {bookingDetails && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">Booking Summary</Typography>
-          <Typography>Name: {bookingDetails.name}</Typography>
-          <Typography>Contact: {bookingDetails.contact}</Typography>
-          <Typography>Guests: {bookingDetails.guests}</Typography>
-          <Typography>Date: {bookingDetails.date}</Typography>
-          <Typography>Time: {bookingDetails.time}</Typography>
+        <Box sx={{ mt: 2 , fontFamily: "Lexend"}}>
+          <Typography variant="h6" sx={{fontFamily: "Lexend", mb: 1}}>Booking Summary</Typography>
+          <Typography sx={{fontFamily: "Lexend", mb:1}}>Name: {bookingDetails.name}</Typography>
+          <Typography sx={{fontFamily: "Lexend", mb:1}}>Contact: {bookingDetails.contact}</Typography>
+          <Typography sx={{fontFamily: "Lexend", mb:1}}>Guests: {bookingDetails.guests}</Typography>
+          <Typography sx={{fontFamily: "Lexend", mb:1}}>Date: {bookingDetails.date}</Typography>
+          <Typography sx={{fontFamily: "Lexend", mb:1}}>Time: {bookingDetails.time}</Typography>
         </Box>
       )}
     </Box>
